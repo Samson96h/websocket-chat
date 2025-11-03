@@ -31,56 +31,70 @@ export class AuthService {
     this.jwtConfig = this.configService.get('JWT_CONFIG') as IJWTConfig;
   }
 
-  async loginOrRegister(dto: CreateAuthDTO): Promise<IAuthEnticationResponse> {
-    const { phone, firstName, confidentiality } = dto
+async loginOrRegister(dto: CreateAuthDTO): Promise<IAuthEnticationResponse> {
+  const { phone, firstName, confidentiality } = dto;
 
-    let user = await this.userRepository.findOne({
-      where: { phone },
-      relations: ['security']
-    })
+  let user = await this.userRepository.findOne({
+    where: { phone },
+    relations: ['security'],
+  });
 
-    if (!user) {
-      user = this.userRepository.create({ phone, firstName, confidentiality })
-      await this.userRepository.save(user)
+  if (!user) {
+    user = this.userRepository.create({ phone, firstName, confidentiality });
+    await this.userRepository.save(user);
 
-      const security = this.securityRepository.create({ user })
-      await this.securityRepository.save(security)
+    const security = this.securityRepository.create({ user });
+    await this.securityRepository.save(security);
 
-      user.security = security
-    }
-
-    if (user.status === userStatus.TEMPORARY_BLOCK) {
-      throw new BadRequestException('User is temporarily blocked')
-    }
-
-    if (user.status === userStatus.PERMAMENTLY_BLOCK) {
-      throw new BadRequestException('User is permanently blocked')
-    }
-
-    const existing = await this.secretRepository.findOne({
-      where: { user: { id: user.id } }
-    })
-    if (existing) {
-      await this.secretRepository.delete({ id: existing.id })
-    }
-
-    const tempToken = this.jwtService.sign(
-      { sub: user.id, phone: user.phone, name: user.firstName, temp: true },
-      {
-        secret: this.jwtConfig.tempSecret,
-        expiresIn: '10m'
-      },
-    )
-
-    const code = createRandomCode().toString()
-    const secretCode = this.secretRepository.create({ code, user })
-    await this.secretRepository.save(secretCode)
-
-    return {
-      accessToken: tempToken,
-      code
-    };
+    user.security = security;
+  } else if (!user.security) {
+    const security = this.securityRepository.create({ user });
+    await this.securityRepository.save(security);
+    user.security = security;
   }
+
+  if (user.status === userStatus.PERMAMENTLY_BLOCK) {
+    throw new BadRequestException('User is permanently blocked');
+  }
+
+  if (user.security.blockedUntil && new Date() < user.security.blockedUntil) {
+    const remaining = Math.ceil(
+      (user.security.blockedUntil.getTime() - new Date().getTime()) / 60000,
+    );
+    throw new BadRequestException(
+      `Account temporarily blocked. Try again in ${remaining} minute(s).`,
+    );
+  }
+
+  if (user.security.blockedUntil && new Date() >= user.security.blockedUntil) {
+    user.security.blockedUntil = null;
+    user.security.attemptsCount = 0;
+    await this.securityRepository.save(user.security);
+  }
+
+  const existing = await this.secretRepository.findOne({
+    where: { user: { id: user.id } },
+  });
+  if (existing) {
+    await this.secretRepository.delete({ id: existing.id });
+  }
+
+  const tempToken = this.jwtService.sign(
+    { sub: user.id, phone: user.phone, name: user.firstName, temp: true },
+    {
+      secret: this.jwtConfig.tempSecret,
+      expiresIn: '10m',
+    },
+  );
+  const code = createRandomCode().toString();
+  const secretCode = this.secretRepository.create({ code, user });
+  await this.secretRepository.save(secretCode);
+
+  return {
+    accessToken: tempToken,
+    code,
+  };
+}
 
 
   async authentication(userId: number, dto: CodeDTO): Promise<IAuthEnticationResponse> {
@@ -123,7 +137,14 @@ export class AuthService {
 
       if (user.security.attemptsCount === 3) {
         user.status = userStatus.TEMPORARY_BLOCK
-        user.security.blockCount += 1;
+        user.security.blockCount += 1
+
+        if (user.security.blockCount === 5) {
+          user.status = userStatus.PERMAMENTLY_BLOCK
+          await this.userRepository.save(user);
+          await this.securityRepository.save(user.security);
+          throw new BadRequestException("User permanently blocked");
+        }
         user.security.attemptsCount = 0
         user.security.blockedUntil = new Date(Date.now() + 15 * 60 * 1000)
 
