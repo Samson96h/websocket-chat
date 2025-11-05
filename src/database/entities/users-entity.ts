@@ -8,13 +8,16 @@ import { UserSecurity } from './user.secutity.entity';
 
 @Entity('users')
 export class User extends Base {
-  @Column({ name: 'first_name', nullable: true})
+  @Column({ name: 'first_name', nullable: true })
   firstName: string;
 
   @Column({ name: 'last_name', nullable: true })
   lastName: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
+  email: string;
+
+  @Column({ unique: true, nullable: true })
   phone: string;
 
   @Column({ nullable: true })
@@ -50,10 +53,10 @@ export class User extends Base {
   @OneToMany(() => SecretCode, (secretCode) => secretCode.user, { cascade: true })
   secretCodes: any;
 
-  @Column({default:userStatus.ACTIVE})
-  status : userStatus
+  @Column({ default: userStatus.ACTIVE })
+  status: userStatus
 
-  @OneToOne(() => UserSecurity, (userSecurity) => userSecurity.user )
+  @OneToOne(() => UserSecurity, (userSecurity) => userSecurity.user)
   security: UserSecurity
 
 }

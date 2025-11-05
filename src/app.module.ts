@@ -19,10 +19,18 @@ import { LikesModule } from './resource/likes/likes.module';
 import { S3Module } from './shared/s3/s3.module';
 import { IAwsConfig } from './models/config/aws-config';
 import { UserSecurity } from './database/entities/user.secutity.entity';
+import { GoogleStrategy } from './strategy/google.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './strategy/jwt.strategy';
 
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([SecretCode, UserSecurity, User]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads/'),
       serveRoot: '/public/',
@@ -60,6 +68,6 @@ import { UserSecurity } from './database/entities/user.secutity.entity';
     S3Module,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, GoogleStrategy, JwtStrategy],
 })
 export class AppModule {}
