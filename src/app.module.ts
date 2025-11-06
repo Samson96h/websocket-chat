@@ -7,7 +7,7 @@ import { Module } from '@nestjs/common';
 import { join } from 'path';
 
 import { IDBConfig } from './models';
-import { jwtConfig, dbConfig, awsConfig } from './configs';
+import { jwtConfig, dbConfig, awsConfig, googleClientConfig } from './configs';
 import { validationSchema } from './validation';
 import { ChatModule } from './resource/chat/chat.module';
 import { AuthModule } from './resource/auth/auth.module';
@@ -16,8 +16,6 @@ import { PostsModule } from './resource/posts/posts.module';
 import { Chat, MediaFiles, Message, SecretCode, User, Posts, Comments, Likes } from './database/entities';
 import { CommentsModule } from './resource/comments/comments.module';
 import { LikesModule } from './resource/likes/likes.module';
-import { S3Module } from './shared/s3/s3.module';
-import { IAwsConfig } from './models/config/aws-config';
 import { UserSecurity } from './database/entities/user.secutity.entity';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { JwtModule } from '@nestjs/jwt';
@@ -39,7 +37,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema: validationSchema,
-      load: [jwtConfig, dbConfig, awsConfig],
+      load: [jwtConfig, dbConfig, awsConfig, googleClientConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -65,7 +63,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     PostsModule,
     CommentsModule,
     LikesModule,
-    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService, GoogleStrategy, JwtStrategy],

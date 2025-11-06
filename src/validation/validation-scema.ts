@@ -13,5 +13,8 @@ export const validationSchema = Joi.object({
     ACCSESSKEYID: Joi.string().required(),
     SECRETACCESSKEY: Joi.string().required(),
     REGION: Joi.string().required(),
-    BUCKET: Joi.string().required()
+    BUCKET: Joi.string().required(),
+    GOOGLE_CLIENT_ID: Joi.string().required(),
+    GOOGLE_CLIENT_SECRET: Joi.string().required(),
+    GOOGLE_CALLBACK_URL: Joi.string().required()
 })
