@@ -57,9 +57,6 @@ export class AppService {
       await this.secretRepository.delete({ id: existing.id });
     }
 
-    const code = createRandomCode().toString();
-    const secretCode = this.secretRepository.create({ code, user });
-    await this.secretRepository.save(secretCode);
 
     const payload = {
       sub: user.id,
@@ -73,7 +70,6 @@ export class AppService {
     return {
       message: 'User logged in via Google',
       user,
-      code,
       jwt,
     };
   }

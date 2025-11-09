@@ -19,7 +19,7 @@ export class PostsController {
 async createPost(
   @AuthUser() user: IRequestUser,
   @Body() dto: CreatePostDTO,
-  @UploadedFiles(PhotoValidationPipe) files: Express.Multer.File[]
+  @UploadedFiles(PhotoValidationPipe) files?: Express.Multer.File[]
 ) {
   return this.postsService.createPost(user.id, dto, files);
 }
