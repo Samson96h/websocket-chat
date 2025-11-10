@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { createRandomCode } from './helpers';
 import { SecretCode, User } from './database/entities';
 import { UserSecurity } from './database/entities/user.secutity.entity';
 import { userStatus } from './database/enums';
