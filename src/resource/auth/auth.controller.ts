@@ -6,8 +6,10 @@ import { CodeDTO } from './dto/check-code.dto';
 import { AuthService } from './auth.service';
 import { AuthUser } from 'src/decorators';
 import { AuthGuard } from '../../guards';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -19,6 +21,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Post('login')
+  @ApiBearerAuth()
   async confirm(@AuthUser() user: IRequestUser ,@Body() dto: CodeDTO) {
     return this.authService.authentication(user.id,dto);
   }

@@ -20,6 +20,8 @@ import { UserSecurity } from './database/entities/user.secutity.entity';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { FacebookStrategy } from './strategy/facebook.strategy';
+import { faceboockClientConfig } from './configs/faceboock-client.config';
 
 
 @Module({
@@ -37,7 +39,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema: validationSchema,
-      load: [jwtConfig, dbConfig, awsConfig, googleClientConfig],
+      load: [jwtConfig, dbConfig, awsConfig, googleClientConfig, faceboockClientConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -65,6 +67,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     LikesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, GoogleStrategy, JwtStrategy],
+  providers: [AppService, GoogleStrategy, FacebookStrategy, JwtStrategy],
 })
 export class AppModule {}

@@ -8,6 +8,10 @@ import { UserSecurity } from './user.secutity.entity';
 
 @Entity('users')
 export class User extends Base {
+
+  @Column({ nullable: true, unique: true })
+  facebookId: string;
+
   @Column({ name: 'first_name', nullable: true })
   firstName: string;
 
